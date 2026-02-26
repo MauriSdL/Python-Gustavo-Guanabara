@@ -1,0 +1,51 @@
+# =========================
+# Ambiente virtual
+# =========================
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =========================
+# Variáveis de ambiente
+# =========================
+.env
+.env.*
+
+# =========================
+# Cache do Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Arquivos de build
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Logs e saídas comuns em automação
+# =========================
+*.log
+logs/
+output/
+downloads/
+exports/
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Sistema
+# =========================
+.DS_Store
+Thumbs.db
