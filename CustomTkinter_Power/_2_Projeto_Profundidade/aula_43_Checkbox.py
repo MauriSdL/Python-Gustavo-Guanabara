@@ -1,0 +1,339 @@
+# Importaçoes
+from tkinter import VERTICAL
+
+import customtkinter as ctk
+
+import subprocess
+
+from flet import Switch
+
+subprocess.run(["clear"])
+
+# ================================== Modos de aparencia ==================================
+# Modos: system(Sistema), light(Claro), dark(Escuro)
+ctk.set_appearance_mode("Light")
+# temas: blue, dark-blue, green
+ctk.set_default_color_theme("blue")
+# ----------------------------------------------------------------------------------------
+
+
+# =============================== Classe principal do app ================================
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.window_config()
+
+        # ===================== Configuração da grade do layout (4x4) ====================
+        # A coluna 1 pode aumentar de largura.
+        self.grid_columnconfigure(1, weight=1)
+        # As colunas 2 e 3 também podem aumentar de largura.
+        self.grid_columnconfigure((2, 3), weight=1)
+        # As linhas 1 e 2 podem aumentar de altura.
+        # O 1 repetido é redundante e pode ser removido sem alterar o comportamento.
+        self.grid_rowconfigure((1, 1, 2), weight=1)
+        # --------------------------------------------------------------------------------
+
+        # ============== Frame sidebar (Barra Lateral a esquerda da janela) ==============
+        # Posiciona self.frame na linha 1, coluna 0,faz com que ele ocupe quatro,
+        # linhas e se expanda para preencher toda a área disponível dessas células.
+        self.sidebar_frame = ctk.CTkFrame(
+            self, width=140, corner_radius=0
+        )  # , fg_color="orange"
+
+        """
+        rowspan --> significa que vai ocupar 4 linhas.
+        colunspan --> significa que vai ocupar 1 ou mais colunas.
+        sticky="nsew" --> Posiçao ocupada:
+        Vazio   -  Posicao no Centro.
+        n(norte) - Posicao Esquerda em cima.
+        s(sul:)  - Posicao Esquerda em Baixo.
+        e(leste) - Posicao Direita no meio.
+        w(oeste) - Posicao Esquerda no Meio.
+        ns       - Estica na Vertical.
+        ew       - Estica na Horizontal.
+        nsew     - Ocupa todo o espaço.
+        """
+
+        self.sidebar_frame.grid(row=1, column=0, rowspan=4, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+        # rowconfigure(4, weight=1) - Configura a linha 4 da sidebar para expandir.
+
+        # Titulo do frame
+        self.label = ctk.CTkLabel(
+            self.sidebar_frame,
+            text="Meu Sistema",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.label.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        # Botao Home
+        self.sidebar_button_1 = ctk.CTkButton(
+            self.sidebar_frame, text="Home", command=self.sidebar_button_1_event
+        )
+        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
+
+        # Botao Usuarios
+        self.sidebar_button_2 = ctk.CTkButton(
+            self.sidebar_frame, text="Usuários", command=self.sidebar_button_1_event
+        )
+        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
+
+        # Botao Nao Clicavel
+        self.sidebar_button_3 = ctk.CTkButton(
+            self.sidebar_frame,
+            text="Não Clicavel",
+            # state="disabled",
+            command=self.sidebar_button_1_event,
+        )
+        self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
+
+        # Label Thema
+        self.appearance_model_label = ctk.CTkLabel(
+            self.sidebar_frame, text="Tema", anchor="w"
+        )
+        self.appearance_model_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+
+        # Botao Light,Dark,System(Muda o cor do Thema)
+        self.appearance_model_optionemenu = ctk.CTkOptionMenu(
+            self.sidebar_frame,
+            values=["Light", "Dark", "System"],
+            command=self.change_appearance_mode_event,
+        )
+        self.appearance_model_optionemenu.grid(row=6, column=0, padx=20, pady=10)
+
+        # Label Escala da UI
+        self.scaling_label = ctk.CTkLabel(
+            self.sidebar_frame, text="Escala da UI", anchor="w"
+        )
+        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+
+        # Botao Escala da UI
+        self.scaling_optionemenu = ctk.CTkOptionMenu(
+            self.sidebar_frame,
+            values=["80%", "90%", "100%", "110%", "120%"],
+            command=self.change_scaling,
+        )
+        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+        # --------------------------------------------------------------------------------
+
+        # ================================= Criar entry  =================================
+        self.entry = ctk.CTkEntry(self, placeholder_text="Escreva uma menssagem...")
+        self.entry.grid(
+            row=3, column=1, columnspan=2, padx=20, pady=20, sticky="nsew"
+        )  # sticky faz esticar o entry na horizontal e vertical.
+
+        # Botao Enviar
+        self.main_button_1 = ctk.CTkButton(
+            master=self,
+            fg_color="white",
+            text="Enviar",
+            border_width=2,
+            text_color=("gray", "red"),
+        )
+        self.main_button_1.grid(row=3, column=3, padx=20, pady=20, sticky="nsew")
+        # --------------------------------------------------------------------------------
+
+        # ============================== Caixa de textobox ===============================
+        self.textbox = ctk.CTkTextbox(self, width=250, fg_color="transparent")
+        self.textbox.grid(
+            row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew"
+        )  # sticky faz esticar o entry na horizontal e vertical.
+        # --------------------------------------------------------------------------------
+
+        # ======================== Frame Tabview - input Dialog ==========================
+        self.tabview = ctk.CTkTabview(self, width=250)
+        self.tabview.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview.add("Tab 1")
+        self.tabview.add("Tab 2")
+        self.tabview.add("Nova Tab")
+        self.tabview.add("Outra Tab")
+
+        # wight da tab 1
+        self.label_1 = ctk.CTkLabel(self.tabview.tab("Tab 1"), text="LOGIN")
+        self.label_1.pack(pady=20)
+
+        self.username = ctk.CTkEntry(
+            self.tabview.tab("Tab 1"), placeholder_text="username..."
+        )
+        self.username.pack(pady=(0, 10))
+
+        self.password = ctk.CTkEntry(
+            self.tabview.tab("Tab 1"), placeholder_text="password..."
+        )
+        self.password.pack(pady=(0, 10))
+
+        self.btn_login = ctk.CTkButton(self.tabview.tab("Tab 1"), text="Login")
+        self.btn_login.pack()
+        # ------------------ #
+
+        # widget da Tab Nova Tab
+        self.input_button = ctk.CTkButton(
+            self.tabview.tab("Nova Tab"),
+            text="Abrir input",
+            command=self.open_input_dialog,
+        )
+        self.input_button.pack(pady=20)
+        # -------------------------------------------------------------------------------
+
+        # ============================ Frame do Radio button ============================
+        # Cria a frame radiobutton_frame
+        self.radiobutton_frame = ctk.CTkFrame(self)
+        self.radiobutton_frame.grid(row=1, column=3, padx=(20, 0), sticky="nsew")
+
+        # Label dentro do frame radiobutton_frame
+        self.label_radio_group = ctk.CTkLabel(
+            self.radiobutton_frame, text="Radio Buttons Group"
+        )
+        self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10)
+
+        # variaveis do radio
+        self.radio_var = ctk.IntVar(value=0)
+
+        # Add Radio button
+        self.radio_button_1 = ctk.CTkRadioButton(
+            self.radiobutton_frame, text="Masculino", variable=self.radio_var, value=0
+        )
+        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
+
+        self.radio_button_2 = ctk.CTkRadioButton(
+            self.radiobutton_frame, text="Feminino", variable=self.radio_var, value=1
+        )
+        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
+        # -------------------------------------------------------------------------------
+
+        # ====================== slide, progressbar, progress frame =====================
+        # frame
+        self.slider_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.slider_frame.grid(
+            row=2, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew"
+        )
+        self.slider_frame.columnconfigure(
+            0, weight=1
+        )  # Serve para os elementos que esta dentro do frame.
+        self.slider_frame.rowconfigure(4, weight=1)
+
+        # Botao de segment Recentes,Mais ouvidas,Antigas.
+        self.segment_button_1 = ctk.CTkSegmentedButton(self.slider_frame)
+        self.segment_button_1.grid(row=0, column=0, padx=(20, 10), pady=10, sticky="ew")
+        # Mostra o nome das Abas.
+        self.segment_button_1.configure(values=["Recentes", "Mais ouvidas", "Antigas"])
+        # Mostra o botao Abilitado.
+        self.segment_button_1.set("Mais ouvidas")
+
+        # Barra de Progresso Horizontal
+        self.progressbar_1 = ctk.CTkProgressBar(self.slider_frame, mode="indeterminate")
+        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=10, sticky="ew")
+
+        # Barra de progresso horizontal usada em Downloads
+        self.progressbar_2 = ctk.CTkProgressBar(
+            self.slider_frame, mode="indeterminate", orientation="horizontal"
+        )
+        self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=10, sticky="ew")
+
+        # Slider usada em Audio e Video
+        self.slider_1 = ctk.CTkSlider(
+            self.slider_frame, from_=0, to=3, number_of_steps=4
+        )  # top=1(começa com), to=1(até quanto), number_of_steps=4(Quantidade de divisoes)
+        self.slider_1.grid(row=3, column=0, pady=10, padx=(20, 10), sticky="ew")
+
+        # Slider na vertical
+        self.slider_2 = ctk.CTkSlider(
+            self.slider_frame, orientation="vertical", from_=0, to=1, number_of_steps=10
+        )  # top=1(começa com), to=1(até quanto), number_of_steps=4(Quantidade de divisoes)
+        self.slider_2.grid(row=0, column=1, rowspan=5, pady=10, padx=10, sticky="ns")
+        # -------------------------------------------------------------------------------
+
+        # =========================== scrollable and switch =============================
+        # scrollable
+        self.scrollable_frame = ctk.CTkScrollableFrame(
+            self,
+            label_text="Lista de Itens",
+            label_font=("Arial bol", 14),
+        )
+        self.scrollable_frame.grid(
+            row=2, column=2, pady=(20, 0), padx=(20, 0), sticky="nsew"
+        )
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)
+
+        # widget Switch adicionados a Lista de Itens
+        self.scrollable_itens = []
+        for i in range(20):
+            # switch
+            switch = ctk.CTkSwitch(self.scrollable_frame, text=f"Switch Item {i}")
+            switch.grid(row=i, column=0, padx=10, pady=(0, 10))
+            # Add os Switch a Lista de Itens
+            self.scrollable_itens.append(switch)
+        # -------------------------------------------------------------------------------
+
+        # ============================ checkbox and switch ==============================
+        #  Criando o Frame
+        self.checkbox_frame = ctk.CTkFrame(self)
+        self.checkbox_frame.grid(row=2, column=3, padx=20, pady=(20, 0), sticky="nsew")
+        # Criando checkbox
+        self.checkbox_1 = ctk.CTkCheckBox(self.checkbox_frame, text="Lembrar-me")
+        self.checkbox_1.pack(pady=10)
+
+        self.checkbox_2 = ctk.CTkCheckBox(
+            self.checkbox_frame, text="Lembrar-me", state="disabled"
+        )
+        self.checkbox_2.pack(pady=10)
+        self.checkbox_2.select()  # Deixa  o checkbox selecionado
+        # state="disabled" deixa o checkbox desabilitado
+        # -------------------------------------------------------------------------------
+
+        # ============================= set default values ==============================
+        self.sidebar_button_3.configure(state="disabled")  # --> Desabilita o botao 3
+        self.appearance_model_optionemenu.set(
+            "Light"
+        )  # --> Define o tema padrao do app
+        self.scaling_optionemenu.set("100%")  # --> Define a escala padrao do app
+
+        # Frase do textobox
+        self.textbox.insert("0.0", "Este é apenas um texto aleatório! \n" * 20)
+
+        # Deixa widget Switch selecionado
+        self.scrollable_itens[0].select()
+        self.scrollable_itens[4].select()
+        # -----------------------------------------------------------------------------------
+
+    # ==================================== functions ====================================
+    def open_input_dialog(self):
+        # Abri a caixa de dialogo
+        telefone = ctk.CTkInputDialog(text="Digite o seu telefone", title="Telefone")
+        print(f"{telefone.get_input()}")
+
+    def change_scaling(self, new_scaling: str):
+        new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        ctk.set_widget_scaling(new_scaling_float)
+
+    def change_appearance_mode_event(self, new_appearence_mode: str):
+        ctk.set_appearance_mode(new_appearence_mode)
+
+    def sidebar_button_1_event(self):
+        print("Home Page Clicado")
+
+    # ------------------------------------------------------------------------------------
+
+    # ======================== Configuraçoes da janela principal =========================
+    def window_config(self):
+        self.title("Janela Principal")
+        self.geometry("1100x600")
+
+        # Desabilita o redimensionamento da janela
+        self.resizable(True, True)
+
+        # Define o tamanho mínimo da janela
+        # self.minsize(1100, 600)
+
+        # Define o tamanho máximo da janela
+        # self.maxsize(1100, 600)
+
+    # ------------------------------------------------------------------------------------
+
+
+# Rodar esta janela somente quando este modulo for
+# executado diretamente, e não quando importado.
+if __name__ == "__main__":
+    app = App()
+    app.window_config()
+    app.mainloop()
